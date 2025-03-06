@@ -1,0 +1,12 @@
+{
+  "name": "bat-vcs",
+  "version": "1.0.0",
+  "description": "basic version control system ",
+  "license": "ISC",
+  "author": "shashwatshiv",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
