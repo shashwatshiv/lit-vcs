@@ -1,8 +1,10 @@
+#! /usr/bin/env node
 import path from "path";
 import fs from "fs/promises";
 import crypto from "crypto";
 import { diffLines } from "diff";
 import chalk from "chalk";
+import { program } from "commander";
 class Bat {
   constructor(repoPath = ".") {
     this.repoPath = path.join(repoPath, ".bat");
@@ -154,12 +156,38 @@ class Bat {
   }
 }
 
-////////////////////////////////////////////////////////
-(async () => {
+// Function Testing calls
+
+// (async () => {
+//   const bat = new Bat();
+//   await bat.add("sampleFile.txt");
+//   await bat.add("sample2.txt");
+//   await bat.commit("8th commit");
+//   await bat.showCommitDiff("abc1328621d78d766c32865639aed9ffe8b5f597");
+//   await bat.log();
+// })();
+
+// Command line Arguments
+program.command("init").action(async () => {
   const bat = new Bat();
-  // await bat.add("sampleFile.txt");
-  // await bat.add("sample2.txt");
-  // await bat.commit("8th commit");
-  await bat.showCommitDiff("abc1328621d78d766c32865639aed9ffe8b5f597");
-  // await bat.log();
-})();
+});
+
+program.command("add <file>").action(async (file) => {
+  const bat = new Bat();
+  await bat.add(file);
+});
+
+program.command("commit <message>").action(async (message) => {
+  const bat = new Bat();
+  await bat.commit(message);
+});
+program.command("log").action(async () => {
+  const bat = new Bat();
+  await bat.log();
+});
+program.command("show <commitHash>").action(async (commitHash) => {
+  const bat = new Bat();
+  await bat.showCommitDiff(commitHash);
+});
+
+program.parse(process.argv);
