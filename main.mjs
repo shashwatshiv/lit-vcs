@@ -1,6 +1,8 @@
 import path from "path";
 import fs from "fs/promises";
 import crypto from "crypto";
+import { diffLines } from "diff";
+import chalk from "chalk";
 class Bat {
   constructor(repoPath = ".") {
     this.repoPath = path.join(repoPath, ".bat");
@@ -79,17 +81,85 @@ class Bat {
           encoding: "utf-8",
         })
       );
-      console.log(`commit ${currentCommitHead}\n
+      console.log(`commit: ${currentCommitHead}\n
         Date: ${commitData.timeStamp}\n
-        Messege: ${commitData.messege}\n`);
+        Messege: ${commitData.messege}\n
+        ----------------------------------\n`);
 
       currentCommitHead = commitData.parent;
     }
   }
+  async getCommitData(commitHash) {
+    const commitPath = path.join(this.objectsPath, commitHash);
+    try {
+      return await fs.readFile(commitPath, { encoding: "utf-8" });
+    } catch (error) {
+      console.log(
+        `Error is fetching commit data for hash: ${commitHash} with error: ${error}`
+      );
+    }
+  }
+  async getFileContent(fileHash) {
+    const objectPath = path.join(this.objectsPath, fileHash);
+    return await fs.readFile(objectPath, { encoding: "utf-8" });
+  }
+  async getParentFileContent(parentCommitData, filePath) {
+    const parentFile = parentCommitData.files.find(
+      (file) => file.path === filePath
+    );
+    if (parentFile) {
+      return await this.getFileContent(parentFile.hash);
+    }
+  }
+  async showCommitDiff(commitHash) {
+    const commitData = JSON.parse(await this.getCommitData(commitHash));
+    if (!commitData) {
+      console.log("Commit not Found ");
+      return;
+    }
+    console.log("Changes in the last commit was:");
+    for (const file of commitData.files) {
+      console.log(`File: ${file.path}`);
+      const fileContent = await this.getFileContent(file.hash);
+      // console.log(fileContent);
+
+      if (commitData.parent) {
+        const parentCommitData = JSON.parse(
+          await this.getCommitData(commitData.parent)
+        );
+        const parentFileContent = await this.getParentFileContent(
+          parentCommitData,
+          file.path
+        );
+        if (parentFileContent !== undefined) {
+          const diff = diffLines(parentFileContent, fileContent);
+          // console.log(diff);
+          diff.forEach((part) => {
+            if (part.added) {
+              process.stdout.write(chalk.green("++" + part.value));
+            } else if (part.removed) {
+              process.stdout.write(chalk.red("--" + part.value));
+            } else {
+              process.stdout.write(chalk.gray(part.value));
+            }
+          });
+          console.log(); //
+        } else {
+          console.log("New File in this commit");
+        }
+      } else {
+        console.log("First Commit");
+      }
+    }
+  }
 }
+
+////////////////////////////////////////////////////////
 (async () => {
   const bat = new Bat();
-  await bat.add("sampleFile.txt");
-  await bat.commit("third commit");
-  await bat.log();
+  // await bat.add("sampleFile.txt");
+  // await bat.add("sample2.txt");
+  // await bat.commit("8th commit");
+  await bat.showCommitDiff("abc1328621d78d766c32865639aed9ffe8b5f597");
+  // await bat.log();
 })();
