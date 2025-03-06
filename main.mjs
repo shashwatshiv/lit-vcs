@@ -69,9 +69,27 @@ class Bat {
       console.log("issue in getCurrentHead fn");
     }
   }
+  // git log function
+  async log() {
+    let currentCommitHead = await this.getCurrentHead(); // get hash of latest commit
+    // get the data of latest commit
+    while (currentCommitHead) {
+      let commitData = JSON.parse(
+        await fs.readFile(path.join(this.objectsPath, currentCommitHead), {
+          encoding: "utf-8",
+        })
+      );
+      console.log(`commit ${currentCommitHead}\n
+        Date: ${commitData.timeStamp}\n
+        Messege: ${commitData.messege}\n`);
+
+      currentCommitHead = commitData.parent;
+    }
+  }
 }
 (async () => {
   const bat = new Bat();
   await bat.add("sampleFile.txt");
-  await bat.commit("intial commit");
+  await bat.commit("third commit");
+  await bat.log();
 })();
