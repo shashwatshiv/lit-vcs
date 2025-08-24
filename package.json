@@ -4,8 +4,11 @@
   "description": "basic version control system ",
   "license": "ISC",
   "author": "shashwatshiv",
-  "type": "commonjs",
-  "main": "main.js",
+  "type": "module",
+  "main": "main.mjs",
+  "bin": {
+    "lit": "./main.mjs"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

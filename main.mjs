@@ -41,7 +41,7 @@ class Lit {
   // helper function to staging the files in index file
   async updateStagingArea(filePath, fileHash) {
     const index = JSON.parse(
-      await fs.readFile(this.indexPath, { encoding: "utf-8" })
+      await fs.readFile(this.indexPath, { encoding: "utf-8" }),
     ); // getting the stage which is tracked in index
     index.push({ path: filePath, hash: fileHash }); // pushing the acurrent file hash in the index array
     await fs.writeFile(this.indexPath, JSON.stringify(index)); // writing back array in index file
@@ -49,7 +49,7 @@ class Lit {
   // commit function
   async commit(messege) {
     const index = JSON.parse(
-      await fs.readFile(this.indexPath, { encoding: "utf-8" })
+      await fs.readFile(this.indexPath, { encoding: "utf-8" }),
     );
     const parentCommit = await this.getCurrentHead();
     const commitData = {
@@ -81,7 +81,7 @@ class Lit {
       let commitData = JSON.parse(
         await fs.readFile(path.join(this.objectsPath, currentCommitHead), {
           encoding: "utf-8",
-        })
+        }),
       );
       console.log(`commit: ${currentCommitHead}\n
         Date: ${commitData.timeStamp}\n
@@ -97,7 +97,7 @@ class Lit {
       return await fs.readFile(commitPath, { encoding: "utf-8" });
     } catch (error) {
       console.log(
-        `Error is fetching commit data for hash: ${commitHash} with error: ${error}`
+        `Error is fetching commit data for hash: ${commitHash} with error: ${error}`,
       );
     }
   }
@@ -107,7 +107,7 @@ class Lit {
   }
   async getParentFileContent(parentCommitData, filePath) {
     const parentFile = parentCommitData.files.find(
-      (file) => file.path === filePath
+      (file) => file.path === filePath,
     );
     if (parentFile) {
       return await this.getFileContent(parentFile.hash);
@@ -127,11 +127,11 @@ class Lit {
 
       if (commitData.parent) {
         const parentCommitData = JSON.parse(
-          await this.getCommitData(commitData.parent)
+          await this.getCommitData(commitData.parent),
         );
         const parentFileContent = await this.getParentFileContent(
           parentCommitData,
-          file.path
+          file.path,
         );
         if (parentFileContent !== undefined) {
           const diff = diffLines(parentFileContent, fileContent);
@@ -175,20 +175,20 @@ program.command("init").action(async () => {
 });
 
 program.command("add <file>").action(async (file) => {
-  const lit = new lit();
+  const lit = new Lit();
   await lit.add(file);
 });
 
 program.command("commit <message>").action(async (message) => {
-  const lit = new lit();
+  const lit = new Lit();
   await lit.commit(message);
 });
 program.command("log").action(async () => {
-  const lit = new lit();
+  const lit = new Lit();
   await lit.log();
 });
 program.command("show <commitHash>").action(async (commitHash) => {
-  const lit = new lit();
+  const lit = new Lit();
   await lit.showCommitDiff(commitHash);
 });
 
